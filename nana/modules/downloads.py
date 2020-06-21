@@ -31,6 +31,10 @@ Reply a document to download it.
 -> `upload (path)`
 give path of file to send to telegram.
 
+──「 **List files and directories** 」──
+-> `ls (path)`
+see list of files and directories, path is optional
+
 ──「 **Direct Link Download** 」──
 -> `direct (url)`
 Create A direct link download
@@ -43,13 +47,31 @@ androidfilehost.com`
 """
 
 
-@app.on_message(Filters.user("self") & Filters.command(["upload"], Command))
+@app.on_message(Filters.me & Filters.command(["ls"], Command))
+async def ls(_client, message):
+    args = message.text.split(None, 1)
+    if len(args) == 2:
+        basepath = "/root/nana/{}".format(args[1])
+    else:
+        basepath = "/root/nana/"
+    directory = ""
+    listfile = ""
+    for entry in os.listdir(basepath):
+        if os.path.isdir(os.path.join(basepath, entry)):
+            directory += "\n{}".format(entry)
+    for entry in os.listdir(basepath):
+        if os.path.isfile(os.path.join(basepath, entry)):
+            listfile += "\n{}".format(entry)
+    await message.edit("**List directory :**`{}`\n**List file :**`{}`".format(directory, listfile))
+
+
+@app.on_message(Filters.me & Filters.command(["upload"], Command))
 async def upload_file(client, message):
     args = message.text.split(None, 1)
     if len(args) == 1:
         await message.edit("usage : upload (path)")
         return
-    path = args[1]
+    path = "/root/nana/{}".format(args[1])
     try:
         await app.send_document(message.chat.id, path, progress=lambda d, t: asyncio.get_event_loop().create_task(
             progressdl(d, t, message, time.time(), "Uploading...")))
@@ -116,8 +138,8 @@ async def download_url(url, file_name):
     return downlaoded
 
 
-@app.on_message(Filters.user("self") & Filters.command(["dl"], Command))
-async def download_from_url(client, message):
+@app.on_message(Filters.me & Filters.command(["dl"], Command))
+async def download_from_url(_client, message):
     if len(message.text.split()) == 1:
         await message.edit("Usage: `dl <url> <filename>`")
         return
@@ -140,7 +162,7 @@ async def download_from_url(client, message):
     await message.edit(download)
 
 
-@app.on_message(Filters.user("self") & Filters.command(["download"], Command))
+@app.on_message(Filters.me & Filters.command(["download"], Command))
 async def dssownload_from_telegram(client, message):
     if message.reply_to_message:
         await download_file_from_tg(client, message)
@@ -148,8 +170,8 @@ async def dssownload_from_telegram(client, message):
         await message.edit("Reply document to download it")
 
 
-@app.on_message(Filters.user("self") & Filters.command(["direct"], Command))
-async def direct_link_generator(client, message):
+@app.on_message(Filters.me & Filters.command(["direct"], Command))
+async def direct_link_generator(_client, message):
     args = message.text.split(None, 1)
     await message.edit("`Processing...`")
     if len(args) == 1:
@@ -430,8 +452,8 @@ async def progressdl(current, total, event, start, type_of_ps, file_name=None):
         time_to_completion = round((total - current) / speed) * 1000
         estimated_total_time = elapsed_time + time_to_completion
         progress_str = "[{0}{1}] {2}%\n".format(
-            ''.join(["▰" for i in range(math.floor(percentage / 10))]),
-            ''.join(["▱" for i in range(10 - math.floor(percentage / 10))]),
+            ''.join("▰" for i in range(math.floor(percentage / 10))),
+            ''.join("▱" for i in range(10 - math.floor(percentage / 10))),
             round(percentage, 2))
         tmp = progress_str + \
               "{0} of {1}\nETA: {2}".format(
@@ -519,7 +541,7 @@ async def download_file_from_tg(client, message):
     await message.edit(text)
 
 
-async def name_file(client, message):
+async def name_file(_client, message):
     if message.reply_to_message.photo:
         return "photo_{}_{}.png".format(message.reply_to_message.photo.date,
                                         message.reply_to_message.photo.date)

@@ -22,7 +22,7 @@ Take screenshot of that website, if `full` args given, take full of website and 
 """
 
 
-@app.on_message(Filters.user("self") & Filters.command(["print"], Command))
+@app.on_message(Filters.me & Filters.command(["print"], Command))
 async def ssweb(client, message):
 	if len(message.text.split()) == 1:
 		await message.edit("Usage: `print web.url`")
@@ -41,7 +41,8 @@ async def ssweb(client, message):
 
 	await client.send_chat_action(message.chat.id, action="upload_photo")
 	r = requests.get("https://api.thumbnail.ws/api/{}/thumbnail/get?url={}&width=1280".format(thumbnail_API, teks),
-					 stream=True)
+					stream=True
+				)
 	if r.status_code != 200:
 		await message.edit(r.text, disable_web_page_preview=True)
 		return
@@ -54,8 +55,8 @@ async def ssweb(client, message):
 	message.edit(capt)
 
 
-@app.on_message(Filters.user("self") & Filters.command(["ss"], Command))
-async def ssweb(client, message):
+@app.on_message(Filters.me & Filters.command(["ss"], Command))
+async def ss_web(client, message):
 	if len(message.text.split()) == 1:
 		await message.edit("Usage: `print web.url`")
 		return
@@ -99,7 +100,8 @@ async def ssweb(client, message):
 			stk.write(chunk)
 
 	await client.send_document(message.chat.id, document="nana/cache/web.png", caption=capt,
-							   reply_to_message_id=message.message_id)
+							reply_to_message_id=message.message_id
+						)
 	os.remove("nana/cache/web.png")
 	await client.send_chat_action(message.chat.id, action="cancel")
 	await message.edit(capt)

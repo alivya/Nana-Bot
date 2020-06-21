@@ -9,8 +9,9 @@ from platform import python_version
 import requests
 from pyrogram import Filters
 from speedtest import Speedtest
+import pyrogram as p
 
-from nana import Command, logging, app, DB_AVAIABLE, USERBOT_VERSION, ASSISTANT_VERSION
+from nana import Command, logging, app, DB_AVAILABLE, USERBOT_VERSION, ASSISTANT_VERSION
 from nana.helpers.deldog import deldog
 from nana.helpers.parser import mention_markdown
 
@@ -46,6 +47,10 @@ Get Repo For this userbot
 -> `speedtest`
 Obtain Server internet speed using speedtest
 
+──「 **Get ID** 」──
+-> `id`
+Send id of what you replied to
+
 """
 
 
@@ -71,7 +76,7 @@ async def pic(chat, photo, caption=None):
 async def aexec(client, message, code):
     # Make an async function with the code and `exec` it
     exec(
-        f'async def __ex(client, message): ' +
+        'async def __ex(client, message): ' +
         ''.join(f'\n {l}' for l in code.split('\n'))
     )
 
@@ -79,7 +84,7 @@ async def aexec(client, message, code):
     return await locals()['__ex'](client, message)
 
 
-@app.on_message(Filters.user("self") & Filters.command(["exec"], Command))
+@app.on_message(Filters.me & Filters.command(["exec"], Command))
 async def executor(client, message):
     if len(message.text.split()) == 1:
         await message.edit("Usage: `exec message.edit('edited!')`")
@@ -95,7 +100,13 @@ async def executor(client, message):
         logging.exception("Execution error")
 
 
-@app.on_message(Filters.user("self") & Filters.command(["cmd"], Command))
+@app.on_message(Filters.me & Filters.command(["ip"], Command))
+async def public_ip(_client, message):
+    ip = requests.get('https://api.ipify.org').text
+    await message.edit(f'<code>{ip}</code>', parse_mode='html')
+
+
+@app.on_message(Filters.me & Filters.command(["cmd"], Command))
 async def terminal(client, message):
     if len(message.text.split()) == 1:
         await message.edit("Usage: `cmd ping -c 5 google.com`")
@@ -156,16 +167,15 @@ async def terminal(client, message):
         await message.edit("**Input: **\n`{}`\n\n**Output: **\n`No Output`".format(teks))
 
 
-@app.on_message(Filters.user("self") & Filters.command(["log"], Command))
-async def log(client, message):
+@app.on_message(Filters.me & Filters.command(["log"], Command))
+async def log(_client, message):
     f = open("nana/logs/error.log", "r")
     data = await deldog(message, f.read())
     await message.edit("`Your recent logs stored here : `{}".format(data))
 
 
-@app.on_message(Filters.user("self") & Filters.command(["dc"], Command))
-async def dc_id(client, message):
-    chat = message.chat
+@app.on_message(Filters.me & Filters.command(["dc"], Command))
+async def dc_id(_client, message):
     user = message.from_user
     if message.reply_to_message:
         if message.reply_to_message.forward_from:
@@ -194,16 +204,15 @@ async def dc_id(client, message):
     await message.edit(text)
 
 
-@app.on_message(Filters.user("self") & Filters.command(["repo"], Command))
-async def repo(client, message):
+@app.on_message(Filters.me & Filters.command(["repo"], Command))
+async def repo(_client, message):
     await message.edit(
-        "Click [here](https://github.com/legenhand/Nana-Bot) to open Nana-Bot GitHub page.\nClick [here]("
-        "https://t.me/nanabotsupport) for support Group",
+        "Click [here](https://github.com/legenhand/Nana-Bot) for Nana-Bot-Remix Source.\nClick [here](https://github.com/legenhand/Nana-Bot) to open Nana-Bot GitHub page.\nClick [here](https://t.me/nanabotsupport) for support Group",
         disable_web_page_preview=True)
 
 
-@app.on_message(Filters.user("self") & Filters.command(["alive"], Command))
-async def alive(client, message):
+@app.on_message(Filters.me & Filters.command(["alive"], Command))
+async def alive(_client, message):
     try:
         me = await app.get_me()
     except ConnectionError:
@@ -215,17 +224,57 @@ async def alive(client, message):
     else:
         text += "-> Userbot: `Running (v{})`\n".format(USERBOT_VERSION)
     text += "-> Assistant: `Running (v{})`\n".format(ASSISTANT_VERSION)
-    text += "-> Database: `{}`\n".format(DB_AVAIABLE)
+    text += "-> Database: `{}`\n".format(DB_AVAILABLE)
     text += "-> Python: `{}`\n".format(python_version())
+    text += "-> Pyrogram: `{}`\n".format(p.__version__)
     if not me:
         text += "\nBot is currently turned off, to start bot again, type /settings and click **Start Bot** button"
     else:
         text += "\nBot logged in as `{}`\n Go to your assistant for more information!".format(me.first_name)
     await message.edit(text)
 
+@app.on_message(Filters.me & Filters.command(["id"], Command))
+async def get_id(_client, message):
+    file_id = None
+    user_id = None
 
-@app.on_message(Filters.user("self") & Filters.command(["speedtest"], Command))
-async def speedtest(client, message):
+    if message.reply_to_message:
+        rep = message.reply_to_message
+        if rep.audio:
+            file_id = rep.audio.file_id
+        elif rep.document:
+            file_id = rep.document.file_id
+        elif rep.photo:
+            file_id = rep.photo.file_id
+        elif rep.sticker:
+            file_id = rep.sticker.file_id
+        elif rep.video:
+            file_id = rep.video.file_id
+        elif rep.animation:
+            file_id = rep.animation.file_id
+        elif rep.voice:
+            file_id = rep.voice.file_id
+        elif rep.video_note:
+            file_id = rep.video_note.file_id
+        elif rep.contact:
+            file_id = rep.contact.file_id
+        elif rep.location:
+            file_id = rep.location.file_id
+        elif rep.venue:
+            file_id = rep.venue.file_id
+        elif rep.from_user:
+            user_id = rep.from_user.id
+
+    if user_id:
+        await message.edit(user_id)
+    elif file_id:
+        await message.edit(file_id)
+    else:
+        await message.edit("This chat's ID:\n`{}`".format(message.chat.id))
+
+
+@app.on_message(Filters.me & Filters.command(["speedtest"], Command))
+async def speedtest(_client, message):
     await message.edit("`Running speed test . . .`")
     test = Speedtest()
     test.get_best_server()

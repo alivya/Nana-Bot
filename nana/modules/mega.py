@@ -20,8 +20,8 @@ List of file that have downloaded with mega.
 """
 
 
-@app.on_message(Filters.user("self") & Filters.command(["mega"], Command))
-async def mega_download(client, msg):
+@app.on_message(Filters.me & Filters.command(["mega"], Command))
+async def mega_download(_client, msg):
     args = msg.text.split(None, 1)
     if len(args) == 1:
         await msg.edit("usage: mega (url)")
@@ -34,8 +34,8 @@ async def mega_download(client, msg):
     await msg.edit("Success! file was downloaded at nana/downloads")
 
 
-@app.on_message(Filters.user("self") & Filters.command(["megafile"], Command))
-async def mega_downloaded_file(client, message):
+@app.on_message(Filters.me & Filters.command(["megafile"], Command))
+async def mega_downloaded_file(_client, message):
     filelist = os.listdir("nana/downloads/mega")
     print(len(filelist))
     if len(filelist) == 0:

@@ -1,12 +1,15 @@
 import logging
 import os
 import sys
+import time
 
 from pydrive.auth import GoogleAuth
 from pyrogram import Client, errors
 from sqlalchemy import create_engine, exc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
+
+StartTime = time.time()
 
 # Postgresql
 
@@ -92,6 +95,9 @@ if ENV:
     bitly_token = [os.environ.get('bitly_token', None)]
     gdrive_credentials = os.environ.get('gdrive_credentials', None)
     lydia_api = os.environ.get('lydia_api', None)
+    lastfm_api = os.environ.get('lastfm_api', None)
+    remove_bg_api = os.environ.get('remove_bg_api', None)
+    lastfm_username = os.environ.get('lastfm_username', None)
     HEROKU_API = os.environ.get('HEROKU_API', None)
     # LOADER
     USERBOT_LOAD = os.environ.get("USERBOT_LOAD", "").split()
@@ -101,9 +107,10 @@ if ENV:
 
     DATABASE_URL = os.environ.get('DATABASE_URL', "postgres://username:password@localhost:5432/database")
     ASSISTANT_BOT_TOKEN = os.environ.get('ASSISTANT_BOT_TOKEN', None)
-    AdminSettings = list(int(x) for x in os.environ.get("AdminSettings", "").split())
+    AdminSettings = [int(x) for x in os.environ.get("AdminSettings", "").split()]
     REMINDER_UPDATE = bool(os.environ.get('REMINDER_UPDATE', True))
     TEST_MODE = bool(os.environ.get('TEST_MODE', False))
+    TG_USERNAME = os.environ.get('TG_USERNAME', None)
 else:
     # logger
     logger = Config.LOGGER
@@ -120,7 +127,7 @@ else:
     # Session
     USERBOT_SESSION = Config.USERBOT_SESSION
     ASSISTANT_SESSION = Config.ASSISTANT_SESSION
-
+    TG_USERNAME = Config.TG_USERNAME
     # Required for some features
     # Set temp var for load later
     Owner = 0
@@ -141,6 +148,9 @@ else:
     gdrive_credentials = None
     lydia_api = Config.lydia_api
     HEROKU_API = Config.HEROKU_API
+    lastfm_api = Config.lastfm_api
+    remove_bg_api = Config.remove_bg_api
+    lastfm_username = Config.lastfm_username
     # LOADER
     USERBOT_LOAD = Config.USERBOT_LOAD
     USERBOT_NOLOAD = Config.USERBOT_NOLOAD
@@ -176,21 +186,21 @@ if USERBOT_SESSION and ASSISTANT_SESSION:
 
 gauth = GoogleAuth()
 
-DB_AVAIABLE = False
+DB_AVAILABLE = False
 BOTINLINE_AVAIABLE = False
 
 
 # Postgresql
 def mulaisql() -> scoped_session:
-    global DB_AVAIABLE
+    global DB_AVAILABLE
     engine = create_engine(DATABASE_URL, client_encoding="utf8")
     BASE.metadata.bind = engine
     try:
         BASE.metadata.create_all(engine)
     except exc.OperationalError:
-        DB_AVAIABLE = False
+        DB_AVAILABLE = False
         return False
-    DB_AVAIABLE = True
+    DB_AVAILABLE = True
     return scoped_session(sessionmaker(bind=engine, autoflush=False))
 
 

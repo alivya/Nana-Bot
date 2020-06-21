@@ -2,11 +2,11 @@ import time
 
 from pyrogram import Filters, InlineKeyboardMarkup, InlineKeyboardButton
 
-from nana import app, setbot, Owner, OwnerName, Command, DB_AVAIABLE
+from nana import app, setbot, Owner, OwnerName, Command, DB_AVAILABLE
 from nana.helpers.msg_types import Types, get_message_type
 from nana.helpers.parser import mention_markdown, escape_markdown
 
-if DB_AVAIABLE:
+if DB_AVAILABLE:
     from nana.modules.database.afk_db import set_afk, get_afk
 
 __MODULE__ = "AFK"
@@ -32,9 +32,9 @@ AFK_RESTIRECT = {}
 DELAY_TIME = 60  # seconds
 
 
-@app.on_message(Filters.user("self") & (Filters.command(["afk"], Command) | Filters.regex("^brb ")))
-async def afk(client, message):
-    if not DB_AVAIABLE:
+@app.on_message(Filters.me & (Filters.command(["afk"], Command) | Filters.regex("^brb ")))
+async def afk(_client, message):
+    if not DB_AVAILABLE:
         await message.edit("Your database is not avaiable!")
         return
     if len(message.text.split()) >= 2:
@@ -52,8 +52,8 @@ async def afk(client, message):
 
 
 @app.on_message(Filters.mentioned & ~Filters.bot, group=11)
-async def afk_mentioned(client, message):
-    if not DB_AVAIABLE:
+async def afk_mentioned(_client, message):
+    if not DB_AVAILABLE:
         return
     global MENTIONED
     get = get_afk()
@@ -73,7 +73,7 @@ async def afk_mentioned(client, message):
         else:
             await message.reply("Sorry, {} is AFK!".format(mention_markdown(Owner, OwnerName)))
 
-        content, message_type = get_message_type(message)
+        _, message_type = get_message_type(message)
         if message_type == Types.TEXT:
             if message.text:
                 text = message.text
@@ -92,9 +92,9 @@ async def afk_mentioned(client, message):
             len(MENTIONED)), reply_markup=button)
 
 
-@app.on_message(Filters.user("self") & Filters.group, group=12)
-async def no_longer_afk(client, message):
-    if not DB_AVAIABLE:
+@app.on_message(Filters.me & Filters.group, group=12)
+async def no_longer_afk(_client, message):
+    if not DB_AVAILABLE:
         return
     global MENTIONED
     get = get_afk()

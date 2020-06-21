@@ -21,8 +21,8 @@ Reply a message to translate that.
 
 # TODO: Setlang for translation
 
-@app.on_message(Filters.user("self") & Filters.command(["tr"], Command))
-async def translate(client, message):
+@app.on_message(Filters.me & Filters.command(["tr"], Command))
+async def translate(_client, message):
     if message.reply_to_message and (message.reply_to_message.text or message.reply_to_message.caption):
         if len(message.text.split()) == 1:
             await message.edit("Usage: Reply to a message, then `tr <lang>`")

@@ -37,7 +37,7 @@ zh-tw: Chinese (Mandarin/Taiwan)`
 lang = "en"  # Default Language for voice
 
 
-@app.on_message(Filters.user("self") & Filters.command(["voice"], Command))
+@app.on_message(Filters.me & Filters.command(["voice"], Command))
 async def voice(client, message):
     global lang
     if len(message.text.split()) == 1:
@@ -57,13 +57,13 @@ async def voice(client, message):
     os.remove("nana/cache/voice.mp3")
 
 
-@app.on_message(Filters.user("self") & Filters.command(["voicelang"], Command))
-async def voicelang(client, message):
+@app.on_message(Filters.me & Filters.command(["voicelang"], Command))
+async def voicelang(_client, message):
     global lang
     temp = lang
     lang = message.text.split(None, 1)[1]
     try:
-        tts = gTTS("tes", lang=lang)
+        gTTS("tes", lang=lang)
     except:
         await message.edit("Wrong Language id !")
         lang = temp

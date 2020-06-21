@@ -66,8 +66,8 @@ async def get_driveinfo(driveid):
     return filename
 
 
-@app.on_message(Filters.user("self") & Filters.command(["credentials"], Command))
-async def credentials(client, message):
+@app.on_message(Filters.me & Filters.command(["credentials"], Command))
+async def credentials(_client, message):
     args = message.text.split(None, 1)
     if len(args) == 1:
         await message.edit("Write any args here!")
@@ -80,7 +80,7 @@ async def credentials(client, message):
         return
 
 
-@app.on_message(Filters.user("self") & Filters.command(["gdrive"], Command))
+@app.on_message(Filters.me & Filters.command(["gdrive"], Command))
 async def gdrive_stuff(client, message):
     gauth.LoadCredentialsFile("nana/session/drive")
     if gauth.credentials is None:
@@ -106,7 +106,7 @@ async def gdrive_stuff(client, message):
                                       "without bracket\n\nAfter that, you can go next guide by type /gdrive")
         else:
             try:
-                authurl = gauth.GetAuthUrl()
+                gauth.GetAuthUrl()
             except:
                 await setbot.send_message(message.from_user.id,
                                           "Wrong Credentials! Check var ENV gdrive_credentials on heroku or do "
@@ -150,18 +150,20 @@ async def gdrive_stuff(client, message):
             os.rename(filename, "nana/downloads/" + filename + ".2")
         await message.edit("Downloaded!\nFile saved to `{}`".format("nana/downloads/" + filename))
     elif len(message.text.split()) == 3 and message.text.split()[1] == "upload":
-        filename = message.text.split()[2].split(None, 1)[0]
+        filerealname = message.text.split()[2].split(None, 1)[0]
+        filename = "nana/downloads/{}".format(filerealname)
         checkfile = os.path.isfile(filename)
         if not checkfile:
-            await message.edit("File `{}` was not found!".format(filename))
+            await message.edit("File `{}` was not found!".format(filerealname))
             return
-        await message.edit("Uploading `{}`...".format(filename))
-        upload = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": drive_dir}], 'title': filename})
+        await message.edit("Uploading `{}`...".format(filerealname))
+        upload = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id": drive_dir}], 'title': filerealname})
         upload.SetContentFile(filename)
         upload.Upload()
         upload.InsertPermission({'type': 'anyone', 'value': 'anyone', 'role': 'reader'})
-        await message.edit("Uploaded!\nDownload link: [{}]({})\nDirect download link: [{}]({})".format(filename, upload[
-            'alternateLink'], filename, upload['downloadUrl']))
+        await message.edit(
+            "Uploaded!\nDownload link: [{}]({})\nDirect download link: [{}]({})".format(filerealname, upload[
+                'alternateLink'], filerealname, upload['downloadUrl']))
     elif len(message.text.split()) == 3 and message.text.split()[1] == "mirror":
         message.edit("Mirroring...")
         driveid = await get_driveid(message.text.split()[2])

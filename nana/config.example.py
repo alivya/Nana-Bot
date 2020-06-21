@@ -33,17 +33,29 @@ class Config(object):
 	bitly_token = ""  # register here : bitly.com
 	lydia_api = ""  # register here : https://coffeehouse.intellivoid.info/
 	HEROKU_API = ""  # if you're using heroku this field must filled, get from here : https://dashboard.heroku.com/account
+
+	# Last Fm API
+	lastfm_api = ""
+	lastfm_username = ""
+
+	# Remove Bg API
+	remove_bg_api = ""
+
 	# Load or no load plugins
 	# userbot
+
 	USERBOT_LOAD = []
 	USERBOT_NOLOAD = []
+
 	# manager bot
+
 	ASSISTANT_LOAD = []
 	ASSISTANT_NOLOAD = []
 
 	# Fill this if you want to login using session code, else leave it blank
 	USERBOT_SESSION = ""
 	ASSISTANT_SESSION = ""
+	TG_USERNAME = ""
 
 	# Pass True if you want to use test mode
 	TEST_MODE = False
